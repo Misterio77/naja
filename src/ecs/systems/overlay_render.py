@@ -162,10 +162,9 @@ class OverlayRenderSystem(BaseSystem):
         )
         self._renderer.blit(title_text, title_rect)
 
-    def _draw_settings_items(
+    def get_menu_fields(
         self, surface_width: int, surface_height: int, selected_index: int
-    ) -> None:
-        """Draw individual settings items."""
+    ) -> list:
         font_path = "assets/font/GetVoIP-Grotesque.ttf"
 
         # spacing and scroll parameters
@@ -214,10 +213,12 @@ class OverlayRenderSystem(BaseSystem):
             rect = text.get_rect()
             rect.left = int(surface_width * 0.10)
             rect.top = padding_y + draw_i * row_h
-            self._renderer.blit(text, rect)
+            menu_fields[field_i]['text'] = text
+            menu_fields[field_i]['rect'] = rect
 
         # draw "Return to Menu" option
-        return_draw_i = len(menu_fields) - top_index
+        return_i = len(menu_fields)
+        return_draw_i = return_i - top_index
         if 0 <= return_draw_i < visible_rows:
             text_color = (
                 Color.from_hex(constants.SCORE_COLOR).to_tuple()
@@ -230,8 +231,23 @@ class OverlayRenderSystem(BaseSystem):
             rect = return_text.get_rect()
             rect.left = int(surface_width * 0.10)
             rect.top = separator_top + int(row_h * 0.5)  # add spacing
-            self._renderer.blit(return_text, rect)
+            menu_fields.append({
+                'label': "Return to Main Menu",
+                'key': 'main_menu',
+                'text': return_text,
+                'rect': rect,
+            })
 
+        return menu_fields
+
+    def _draw_settings_items(
+        self, surface_width: int, surface_height: int, selected_index: int
+    ) -> None:
+        """Draw individual settings items."""
+        fields = self.get_menu_fields(surface_width, surface_height, selected_index)
+        for item in fields:
+            self._renderer.blit(item['text'], item['rect'])
+            
     def _draw_settings_hint(self, surface_width: int, surface_height: int) -> None:
         """Draw settings menu hint footer."""
         font_path = "assets/font/GetVoIP-Grotesque.ttf"

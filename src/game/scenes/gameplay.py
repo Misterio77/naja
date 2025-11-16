@@ -114,10 +114,19 @@ class GameplayScene(BaseScene):
         # game logic systems (indices 0-7, paused during pause)
         from ecs.systems.apple_spawn import AppleSpawnSystem
 
+        if self._renderer:
+            self._board_render_system = BoardRenderSystem(self._renderer)
+            self._entity_render_system = EntityRenderSystem(self._renderer)
+            self._snake_render_system = SnakeRenderSystem(self._renderer)
+            self._ui_render_system = UIRenderSystem(self._renderer, self._settings)
+            self._overlay_render_system = OverlayRenderSystem(
+                self._renderer, self._settings, self._config
+            )
+
         self._systems.extend(
             [
                 InputSystem(
-                    self._pygame_adapter, self._settings
+                    self._pygame_adapter, self._settings, self._renderer, self._overlay_render_system
                 ),  # 0: read user input and update velocity/game state
                 MovementSystem(
                     self._get_electric_walls
@@ -154,13 +163,6 @@ class GameplayScene(BaseScene):
 
         # render systems (11-14: draw board, entities, snake, UI)
         if self._renderer:
-            self._board_render_system = BoardRenderSystem(self._renderer)
-            self._entity_render_system = EntityRenderSystem(self._renderer)
-            self._snake_render_system = SnakeRenderSystem(self._renderer)
-            self._ui_render_system = UIRenderSystem(self._renderer, self._settings)
-            self._overlay_render_system = OverlayRenderSystem(
-                self._renderer, self._settings, self._config
-            )
             self._systems.extend(
                 [
                     self._board_render_system,
